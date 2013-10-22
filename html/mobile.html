@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<meta name="viewport" content="width=device-width, user-scalable=no"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	
+	<title>Pong Controller</title>
+
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript">
+	var init = function()
+	{
+		var canvas = document.getElementById('touchpad');
+		var context = canvas.getContext('2d');
+		var socket = io.connect('/');
+		
+		socket.emit('connect', {connectionType:'Mobile'});
+		
+		socket.on('message', function (data) 
+		{
+			var displayMessage = '';
+
+			if (data.queue != undefined)
+			{
+				switch (data.queue)
+				{
+					case 1: displayMessage = 'Waiting for opponent.'; break;
+					case 2: displayMessage = 'Joining game.'; break;
+					default: displayMessage = data.queue.toOrdinal() + ' in line, please wait.';
+				}
+			}
+			
+			if (data.game != undefined)
+			{
+				switch (data.game)
+				{
+					case 'start': displayMessage = 'Move your paddle by swiping up and down.'; break;
+					case 'end': displayMessage = 'Good game! Please try again.'; break;
+				}
+			}
+
+			document.getElementById('message').innerHTML = displayMessage;
+		});
+	
+		canvas.addEventListener('touchend', function() 
+		{
+			context.clearRect(0, 0, 320, 480);
+		});
+		
+		canvas.addEventListener('touchmove', function(e) 
+		{
+			e.preventDefault();
+			context.clearRect(0, 0, 320, 480);
+			
+			var px, py;
+			var offset = {};
+				offset.x = 0;
+				offset.y = 10;
+				
+			px = e.touches[0].pageX - offset.x;
+			py = e.touches[0].pageY - offset.y;
+			
+			//Finger
+			context.beginPath();
+			context.arc(px, py, 20, 0, 2 * Math.PI, true);
+			context.closePath();
+			
+			//Gradient
+			var grad = context.createRadialGradient(px, py, 5, px, py, 20);
+			grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+			grad.addColorStop(1, 'rgba(0, 0, 0, .3)');
+			context.fillStyle = grad;
+			context.fill();
+			
+			//Stroke
+			context.lineWidth = 1.0;
+			context.strokeStyle = 'rgba(238, 236, 186, .5)';
+			context.stroke();
+			
+			//Shadow
+			context.shadowOffsetX = 3;
+			context.shadowOffsetY = 3;
+			context.shadowBlur = 4;
+			context.shadowColor = 'rgba(0, 0, 0, .4)';
+	
+			socket.emit('movement', {positionY:py});
+		});
+		
+		window.scrollTo(0, 1);
+	}
+	
+	Number.prototype.toOrdinal = function (m) {
+		return (this + ["th", "st", "nd", "rd"][(!(((m = this % 10) > 3) || (Math.floor(this % 100 / 10) == 1))) * m]);
+	}
+	
+	setTimeout(init, 500);
+	</script>
+	
+	<style type='text/css' media='all'>
+	body {
+		margin:0;
+		background-color:#FFF;
+	}
+	
+	canvas {
+		width:320px;
+		height:480px;
+	}
+	
+	#message {
+		position:absolute;
+		top:5px;
+		left:5px;
+		width:305px;
+		background:#333;
+		border-radius:10px;
+		padding:3px;
+		color:#FFF;
+		text-align:center;
+		font-family:sans-serif;
+		font-weight:bold;
+		font-size:20px;
+		opacity:0.8;
+	}
+	</style>
+
+</head>
+
+<body>
+
+<canvas id="touchpad" width="320" height="480"></canvas>
+<div id="message">Connecting to server...</div>
+
+</body>
+</html>
