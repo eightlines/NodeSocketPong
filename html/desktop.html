@@ -5,7 +5,7 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" src="http://cloud.github.com/downloads/processing-js/processing-js/processing-1.3.6.min.js"></script>
 	<script type="application/processing" data-processing-target="pjsCanvas">
-	/* @pjs font="http://127.0.0.1:20483/media/fonts/MyriadWebPro.ttf"; */
+	/* @pjs font="http://127.0.0.1:20483/font.ttf"; */
 	
 	float ballX;
 	float ballY;
@@ -232,7 +232,7 @@
 	void setPlayerPosition(int playerId, int destY)
 	{
 		int y = map(destY, 10, 395, 0, 600);
-		
+
 		if (playerId == 1)
 			player1PaddleY = y;
 		else
@@ -261,6 +261,7 @@
 
 		socket.on('player', function (data) 
 		{
+			console.log(data);
 			pjs.setPlayerPosition(data.player, data.positionY);
 		});
 		

@@ -23,6 +23,10 @@ app.get('/', function(req, res) {
 	res.sendfile(__dirname + (isMobile(req) ? '/html/mobile.html' : '/html/desktop.html'));
 });
 
+app.get('/font.ttf', function(req, res) {	
+	res.sendfile(__dirname + '/media/fonts/MyriadWebPro.ttf');
+});
+
 app.get('/reset', function(req, res) {
 	queue = [];
 	res.send("Queue Reset");
